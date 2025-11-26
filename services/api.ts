@@ -1,28 +1,27 @@
-//services/api.ts
+import axios from 'axios';
 import { Task } from '../types/task';
 
-// Simulación de base de datos en memoria
-let mockTasks: Task[] = [
-  {
-    id: '1',
-    title: 'Tarea de ejemplo',
-    description: 'Esta es una tarea de prueba',
-    completed: false,
-    createdAt: new Date().toISOString()
-  }
-];
+// URL pública de Firebase Workstations para json-server
+const API_URL = 'https://3000-firebase-sumativatask-1764177843484.cluster-r7kbxfo3fnev2vskbkhhphetq6.cloudworkstations.dev/tasks';
 
-// Simular delay de red
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+console.log('🔗 API URL:', API_URL);
+
+const apiClient = axios.create({
+  baseURL: API_URL.replace('/tasks', ''),
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  timeout: 10000,
+});
 
 export const taskService = {
   // Obtener todas las tareas
   getTasks: async (): Promise<Task[]> => {
     try {
       console.log('📡 Llamando a getTasks...');
-      await delay(300); // Simular latencia
-      console.log('✅ Tasks obtenidas:', mockTasks);
-      return [...mockTasks];
+      const response = await apiClient.get<Task[]>('/tasks');
+      console.log('✅ Tasks obtenidas:', response.data);
+      return response.data;
     } catch (error) {
       console.error('❌ Error en getTasks:', error);
       throw error;
@@ -33,16 +32,13 @@ export const taskService = {
   createTask: async (task: Omit<Task, 'id'>): Promise<Task> => {
     try {
       console.log('📡 Creando tarea...');
-      await delay(300);
-      const newTask: Task = {
+      const response = await apiClient.post<Task>('/tasks', {
         ...task,
-        id: Date.now().toString(),
+        completed: false,
         createdAt: new Date().toISOString(),
-        completed: false
-      };
-      mockTasks.push(newTask);
-      console.log('✅ Tarea creada:', newTask);
-      return newTask;
+      });
+      console.log('✅ Tarea creada:', response.data);
+      return response.data;
     } catch (error) {
       console.error('❌ Error en createTask:', error);
       throw error;
@@ -53,13 +49,9 @@ export const taskService = {
   updateTask: async (id: string, task: Partial<Task>): Promise<Task> => {
     try {
       console.log('📡 Actualizando tarea con ID:', id);
-      await delay(300);
-      const index = mockTasks.findIndex(t => t.id === id);
-      if (index === -1) throw new Error('Tarea no encontrada');
-      
-      mockTasks[index] = { ...mockTasks[index], ...task };
-      console.log('✅ Tarea actualizada:', mockTasks[index]);
-      return mockTasks[index];
+      const response = await apiClient.patch<Task>(`/tasks/${id}`, task);
+      console.log('✅ Tarea actualizada:', response.data);
+      return response.data;
     } catch (error) {
       console.error('❌ Error en updateTask:', error);
       throw error;
@@ -70,12 +62,11 @@ export const taskService = {
   deleteTask: async (id: string): Promise<void> => {
     try {
       console.log('📡 Eliminando tarea con ID:', id);
-      await delay(300);
-      mockTasks = mockTasks.filter(t => t.id !== id);
-      console.log('✅ Tarea eliminada. Tareas restantes:', mockTasks);
+      await apiClient.delete(`/tasks/${id}`);
+      console.log('✅ Tarea eliminada');
     } catch (error) {
       console.error('❌ Error en deleteTask:', error);
       throw error;
     }
-  }
+  },
 };
