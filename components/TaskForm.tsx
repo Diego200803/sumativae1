@@ -1,5 +1,6 @@
+//components/TaskForm.tsx
 import React, { useState } from 'react';
-import { View, TextInput, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TextInput, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
 
 interface TaskFormProps {
   onSubmit: (title: string, description: string) => void;
@@ -18,6 +19,8 @@ export const TaskForm: React.FC<TaskFormProps> = ({
   const [description, setDescription] = useState(initialDescription);
   const [titleError, setTitleError] = useState('');
   const [descriptionError, setDescriptionError] = useState('');
+  const [titleFocused, setTitleFocused] = useState(false);
+  const [descriptionFocused, setDescriptionFocused] = useState(false);
 
   const validateAlphanumeric = (text: string): boolean => {
     const regex = /^[a-zA-Z0-9\s]+$/;
@@ -70,37 +73,76 @@ export const TaskForm: React.FC<TaskFormProps> = ({
     }
   };
 
+  const isFormValid = !titleError && !descriptionError && title && description;
+
   return (
     <View style={styles.container}>
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Título</Text>
-        <TextInput
-          style={[styles.input, titleError ? styles.inputError : null]}
-          value={title}
-          onChangeText={handleTitleChange}
-          placeholder="Ingresa el título de la tarea"
-        />
-        {titleError ? <Text style={styles.errorText}>{titleError}</Text> : null}
+        <View style={styles.labelContainer}>
+          <Text style={styles.labelIcon}>📝</Text>
+          <Text style={styles.label}>Título</Text>
+        </View>
+        <View style={[
+          styles.inputWrapper,
+          titleFocused && styles.inputWrapperFocused,
+          titleError && styles.inputWrapperError
+        ]}>
+          <TextInput
+            style={styles.input}
+            value={title}
+            onChangeText={handleTitleChange}
+            onFocus={() => setTitleFocused(true)}
+            onBlur={() => setTitleFocused(false)}
+            placeholder="Ingresa el título de la tarea"
+            placeholderTextColor="#9CA3AF"
+          />
+        </View>
+        {titleError ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorIcon}>⚠️</Text>
+            <Text style={styles.errorText}>{titleError}</Text>
+          </View>
+        ) : null}
       </View>
 
       <View style={styles.inputContainer}>
-        <Text style={styles.label}>Descripción</Text>
-        <TextInput
-          style={[styles.input, styles.textArea, descriptionError ? styles.inputError : null]}
-          value={description}
-          onChangeText={handleDescriptionChange}
-          placeholder="Ingresa la descripción de la tarea"
-          multiline
-          numberOfLines={4}
-        />
-        {descriptionError ? <Text style={styles.errorText}>{descriptionError}</Text> : null}
+        <View style={styles.labelContainer}>
+          <Text style={styles.labelIcon}>📄</Text>
+          <Text style={styles.label}>Descripción</Text>
+        </View>
+        <View style={[
+          styles.inputWrapper,
+          styles.textAreaWrapper,
+          descriptionFocused && styles.inputWrapperFocused,
+          descriptionError && styles.inputWrapperError
+        ]}>
+          <TextInput
+            style={[styles.input, styles.textArea]}
+            value={description}
+            onChangeText={handleDescriptionChange}
+            onFocus={() => setDescriptionFocused(true)}
+            onBlur={() => setDescriptionFocused(false)}
+            placeholder="Ingresa la descripción de la tarea"
+            placeholderTextColor="#9CA3AF"
+            multiline
+            numberOfLines={4}
+          />
+        </View>
+        {descriptionError ? (
+          <View style={styles.errorContainer}>
+            <Text style={styles.errorIcon}>⚠️</Text>
+            <Text style={styles.errorText}>{descriptionError}</Text>
+          </View>
+        ) : null}
       </View>
 
       <TouchableOpacity 
-        style={[styles.button, (titleError || descriptionError || !title || !description) ? styles.buttonDisabled : null]}
+        style={[styles.button, !isFormValid && styles.buttonDisabled]}
         onPress={handleSubmit}
-        disabled={!!(titleError || descriptionError || !title || !description)}
+        disabled={!isFormValid}
+        activeOpacity={0.8}
       >
+        <Text style={styles.buttonIcon}>✓</Text>
         <Text style={styles.buttonText}>{submitButtonText}</Text>
       </TouchableOpacity>
     </View>
@@ -112,46 +154,98 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   inputContainer: {
-    marginBottom: 20,
+    marginBottom: 24,
+  },
+  labelContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  labelIcon: {
+    fontSize: 18,
+    marginRight: 8,
   },
   label: {
     fontSize: 16,
-    fontWeight: 'bold',
-    marginBottom: 8,
-    color: '#333',
+    fontWeight: '700',
+    color: '#1F2937',
+  },
+  inputWrapper: {
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  inputWrapperFocused: {
+    borderColor: '#6366F1',
+    shadowColor: '#6366F1',
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  inputWrapperError: {
+    borderColor: '#EF4444',
   },
   input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 12,
+    padding: 16,
     fontSize: 16,
-    backgroundColor: '#fff',
+    color: '#1F2937',
+  },
+  textAreaWrapper: {
+    height: 120,
   },
   textArea: {
-    height: 100,
+    height: 120,
     textAlignVertical: 'top',
   },
-  inputError: {
-    borderColor: '#ff0000',
+  errorContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 8,
+    paddingHorizontal: 4,
+  },
+  errorIcon: {
+    fontSize: 14,
+    marginRight: 6,
   },
   errorText: {
-    color: '#ff0000',
-    fontSize: 12,
-    marginTop: 4,
+    color: '#EF4444',
+    fontSize: 13,
+    fontWeight: '600',
   },
   button: {
-    backgroundColor: '#007AFF',
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: '#6366F1',
+    padding: 18,
+    borderRadius: 12,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 8,
+    shadowColor: '#6366F1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   buttonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: '#D1D5DB',
+    shadowOpacity: 0,
+    elevation: 0,
+  },
+  buttonIcon: {
+    color: '#fff',
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginRight: 8,
   },
   buttonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: 'bold',
   },
 });

@@ -1,5 +1,6 @@
+//create.tsx
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { TaskForm } from '../components/TaskForm';
 import { useTaskContext } from '../context/TaskContext';
 import { useRouter } from 'expo-router';
@@ -19,7 +20,11 @@ export default function CreateScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>Nueva Tarea</Text>
+      <View style={styles.header}>
+        <Text style={styles.emoji}>✨</Text>
+        <Text style={styles.title}>Nueva Tarea</Text>
+        <Text style={styles.subtitle}>Crea una nueva tarea para organizar tu día</Text>
+      </View>
       <TaskForm onSubmit={handleSubmit} submitButtonText="Crear Tarea" />
     </ScrollView>
   );
@@ -28,13 +33,26 @@ export default function CreateScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F8F9FD',
+  },
+  header: {
+    padding: 20,
+    paddingBottom: 10,
+    alignItems: 'center',
+  },
+  emoji: {
+    fontSize: 48,
+    marginBottom: 12,
   },
   title: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
-    padding: 20,
-    paddingBottom: 0,
-    color: '#333',
+    color: '#1F2937',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 15,
+    color: '#6B7280',
+    textAlign: 'center',
   },
 });

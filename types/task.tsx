@@ -1,3 +1,4 @@
+//types/task.tsx
 export interface Task {
     id: string;
     title: string;
